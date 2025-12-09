@@ -13,6 +13,8 @@ Just views all sudo users without all the garbage.
 #PrivTester
 Ensures that programs have correct permission structures after using SudoAuditor.
 
+# Service Hardening: Do not forget to restart via systemct.
+
 #Apache2.conf
 Drag this pre-configured file to harden apache2
 /etc/apache2/apache2.conf
@@ -20,3 +22,7 @@ Drag this pre-configured file to harden apache2
 #000-default-conf
 Drag this pre-configured file to harden apache2
 /etc/apache/sites-available/
+
+#mysql.cnf
+Drag this pre-configured file to harden mysql
+/etc/mysql/mysql.conf.d
