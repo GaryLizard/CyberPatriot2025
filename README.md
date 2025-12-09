@@ -26,3 +26,7 @@ Drag this pre-configured file to harden apache2
 #mysql.cnf
 Drag this pre-configured file to harden mysql
 /etc/mysql/mysql.conf.d
+
+#php.ini
+Drag this hardened php.ini file to
+/etc/php/*VERSION*/apache2/php.ini
