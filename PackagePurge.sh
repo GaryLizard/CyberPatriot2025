@@ -6,7 +6,9 @@ PACKAGES_TO_PURGE=(
     netcat-openbsd netcat-traditional hydra john nikto wireshark aircrack-ng tcpdump p0f
     sqlmap maltego dirbuster steghide dirb recon-ng wifipumpkin3 burpsuite netdiscover
     cowpatty hashcat hping3 armitage beef-xss sherlock gobuster bloodhound ettercap
-    bettercap scapy autopsy metasploit-framework mimikatz sqlninja snort lynis dnschef spiderfoot nessus
+    bettercap scapy autopsy metasploit-framework mimikatz sqlninja snort lynis dnschef 	
+    spiderfoot nessus ophcrack-cli netcat ettercap-common ettercap-graphicsal ettercap-text-only
+    zenmap kismet dsniff fierce yersinia macchanger medusa cewl wfuzz enum4linux smbclient nbtclient snmpwalk snmp cupp cupp3 4g8
 )
 
 LOGFILE="/var/log/package_purge_$(date +%Y%m%d_%H%M%S).log"
@@ -97,4 +99,25 @@ sudo snap remove --purge tcpdump
 sudo snap remove --purge wireshark
 sudo snap remove --purge wifipumpkin3 
 sudo snap remove --purge nessus
-
+sudo snap remove --purge ophcrack-cli 
+sudo snap remove --purge netcat 
+sudo snap remove --purge ettercap-common 
+sudo snap remove --purge ettercap-graphical 
+sudo snap remove --purge ettercap-text-only
+sudo snap remove --purge zenmap 
+sudo snap remove --purge kismet 
+sudo snap remove --purge dsniff 
+sudo snap remove --purge fierce 
+sudo snap remove --purge yersinia 
+sudo snap remove --purge macchanger 
+sudo snap remove --purge medusa 
+sudo snap remove --purge cewl 
+sudo snap remove --purge wfuzz 
+sudo snap remove --purge enum4linux 
+sudo snap remove --purge smbclient 
+sudo snap remove --purge nbtclient 
+sudo snap remove --purge snmpwalk 
+sudo snap remove --purge snmp 
+sudo snap remove --purge cupp 
+sudo snap remove --purge cupp3 
+sudo snap remove --purge 4g8
