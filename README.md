@@ -13,4 +13,5 @@ Just views all sudo users without all the garbage.
 #PrivTester
 Ensures that programs have correct permission structures after using SudoAuditor.
 
-
+#Apache2.conf
+Drag this pre-configured file to harden apache2
