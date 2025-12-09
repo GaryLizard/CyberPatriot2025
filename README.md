@@ -17,6 +17,6 @@ Ensures that programs have correct permission structures after using SudoAuditor
 Drag this pre-configured file to harden apache2
 /etc/apache2/apache2.conf
 
-#000 
+#000-default-conf
 Drag this pre-configured file to harden apache2
 /etc/apache/sites-available/
