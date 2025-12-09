@@ -1,4 +1,5 @@
-# SudoAuditor
+# CyberPatriot
+#SudoAuditor
 Revokes sudo privileges to all users except the ones added as an argument. Made for Ubuntu.
 
 Example of use (Must be sudo):
