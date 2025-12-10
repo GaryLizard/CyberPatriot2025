@@ -60,7 +60,6 @@ for package in "${PACKAGES_TO_PURGE[@]}"; do
         # The -y flag assumes 'yes' to prompts.
         # The '|| true' ensures the loop continues even if apt purge fails.
         apt purge -y "$package" >> "$LOGFILE" 2>&1
-        snap remove --purge -y "$package" >> "$LOGFILE" 2>&1
         
         if [ $? -eq 0 ]; then
             echo "✅ Successfully purged **$package**." | tee -a "$LOGFILE"
@@ -87,4 +86,80 @@ echo "Summary:" | tee -a "$LOGFILE"
 echo "Successful purges: $SUCCESS_COUNT" | tee -a "$LOGFILE"
 echo "Failed purges: $FAIL_COUNT" | tee -a "$LOGFILE"
 echo "Full details are in: $LOGFILE" | tee -a "$LOGFILE"
-
+sudo snap remove --purge aircrack-ng
+sudo snap remove --purge armitage
+sudo snap remove --purge autopy
+sudo snap remove --purge beef-xss
+sudo snap remove --purge bettercap
+sudo snap remove --purge bloodhound
+sudo snap remove --purge burpsuite
+sudo snap remove --purge dirb
+sudo snap remove --purge dirbuster
+sudo snap remove --purge dnschef
+sudo snap remove --purge fcrackzip
+sudo snap remove --purge ftpscan
+sudo snap remove --purge gobuster
+sudo snap remove --purge hashcat
+sudo snap remove --purge hping3
+sudo snap remove --purge hydra
+sudo snap remove --purge john
+sudo snap remove --purge lynis
+sudo snap remove --purge maltego
+sudo snap remove --purge metasploit-framework
+sudo snap remove --purge mimikatz
+sudo snap remove --purge nmap
+sudo snap remove --purge nikto
+sudo snap remove --purge p0f
+sudo snap remove --purge recon-ng
+sudo snap remove --purge scapy
+sudo snap remove --purge sherlock
+sudo snap remove --purge snort
+sudo snap remove --purge spiderfoot
+sudo snap remove --purge sqlmap
+sudo snap remove --purge sqlninja
+sudo snap remove --purge steghide
+sudo snap remove --purge tcpdump
+sudo snap remove --purge wireshark
+sudo snap remove --purge wifipumpkin3 
+sudo snap remove --purge nessus
+sudo snap remove --purge ophcrack-cli 
+sudo snap remove --purge netcat 
+sudo snap remove --purge ettercap-common 
+sudo snap remove --purge ettercap-graphical 
+sudo snap remove --purge ettercap-text-only
+sudo snap remove --purge zenmap 
+sudo snap remove --purge kismet 
+sudo snap remove --purge dsniff 
+sudo snap remove --purge fierce 
+sudo snap remove --purge yersinia 
+sudo snap remove --purge macchanger 
+sudo snap remove --purge medusa 
+sudo snap remove --purge cewl 
+sudo snap remove --purge wfuzz 
+sudo snap remove --purge enum4linux 
+sudo snap remove --purge smbclient 
+sudo snap remove --purge nbtclient 
+sudo snap remove --purge snmpwalk 
+sudo snap remove --purge snmp 
+sudo snap remove --purge cupp 
+sudo snap remove --purge cupp3 
+sudo snap remove --purge 4g8
+sudo snap remove --purge john-the-ripper
+sudo snap remove --purge hunt
+sudo snap remove --purge nbtscan
+sudo snap remove --purge zaproxy
+sudo snap remove --purge set
+sudo snap remove --purge sqlitebrowser
+sudo snap remove --purge whatweb
+sudo snap remove --purge volatility
+sudo snap remove --purge autopsy
+sudo snap remove --purge testdisk
+sudo snap remove --purge foremost
+sudo snap remove --purge binwalk
+sudo snap remove --purge radare2
+sudo snap remove --purge ghidra
+sudo snap remove --purge cutter
+sudo snap remove --purge edb-debugger
+sudo snap remove --purge ollydbg
+sudo snap remove --purge x64dbg
+sudo snap remove --purge wpscan
