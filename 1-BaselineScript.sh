@@ -1,35 +1,45 @@
 #!/bin/bash
+# Security hardening script - fixed version
 
+# Exit on error
+set -e
 
-#Disable SysRq key combination
-sudo sed -i 's/kernel.sysrq.*/kernel.sysrq = 0/' /etc/sysctl.conf
+echo "Starting security hardening..."
+
+# Disable SysRq key combination
+echo "Disabling SysRq key..."
+sudo sed -i 's/^kernel.sysrq.*/kernel.sysrq = 0/' /etc/sysctl.conf
+if ! grep -q "^kernel.sysrq" /etc/sysctl.conf; then
+    echo "kernel.sysrq = 0" | sudo tee -a /etc/sysctl.conf
+fi
 sudo sysctl -w kernel.sysrq=0
 
-#Remove unautheorized PPAs and third-party repos
-sudo rm /etc/apt/sources.list.d/<unauthorized>.list
+# Remove unauthorized PPAs and third-party repos
+echo "Removing unauthorized repos..."
+# Replace <unauthorized> with actual filename if needed
+# sudo rm -f /etc/apt/sources.list.d/<unauthorized>.list
 
-#Disable shell for service accounts
-sudo usermod -s /usr/sbin/nologin games
-sudo usermod -s /usr/sbin/nologin news
-sudo usermod -s /usr/sbin/nologin uucp
-sudo usermod -s /usr/sbin/nologin proxy
-sudo usermod -s /usr/sbin/nologin www-data
-sudo usermod -s /usr/sbin/nologin backup
-sudo usermod -s /usr/sbin/nologin list
-sudo usermod -s /usr/sbin/nologin irc
-sudo usermod -s /usr/sbin/nologin gnats
-sudo usermod -s /usr/sbin/nologin nobody
+# Disable shell for service accounts
+echo "Disabling shell for service accounts..."
+for user in games news uucp proxy www-data backup list irc gnats nobody; do
+    if id "$user" &>/dev/null; then
+        sudo usermod -s /usr/sbin/nologin "$user" 2>/dev/null || true
+    fi
+done
 
-#Disable guest accounts
-sudo sed -i '//,+1d' /etc/lightdm/lightdm.conf.d/50-no-guest.conf 2>/dev/null || true
+# Disable guest accounts
+echo "Disabling guest accounts..."
+sudo mkdir -p /etc/lightdm/lightdm.conf.d/
 echo -e "[Seat:*]\nallow-guest=false" | sudo tee /etc/lightdm/lightdm.conf.d/50-no-guest.conf > /dev/null
 
-#Global password aging controls
+# Global password aging controls
+echo "Configuring password aging..."
 sudo sed -i 's/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   90/' /etc/login.defs
 sudo sed -i 's/^PASS_MIN_DAYS.*/PASS_MIN_DAYS   10/' /etc/login.defs
 sudo sed -i 's/^PASS_WARN_AGE.*/PASS_WARN_AGE   7/' /etc/login.defs
 
-#PAM pw quality
+# PAM password quality
+echo "Configuring password quality requirements..."
 sudo sed -i 's/^#\?minlen = .*/minlen = 12/' /etc/security/pwquality.conf
 sudo sed -i 's/^#\?dcredit = .*/dcredit = -1/' /etc/security/pwquality.conf
 sudo sed -i 's/^#\?ucredit = .*/ucredit = -1/' /etc/security/pwquality.conf
@@ -39,31 +49,79 @@ sudo sed -i 's/^#\?difok = .*/difok = 3/' /etc/security/pwquality.conf
 sudo sed -i 's/^#\?maxrepeat = .*/maxrepeat = 3/' /etc/security/pwquality.conf
 sudo sed -i 's/^#\?dictcheck = .*/dictcheck = 1/' /etc/security/pwquality.conf
 
-#PAM password config 
-sudo sed -i 's/pam_pwquality\.so.*/pam_pwquality.so retry=3 minlen=12 dcredit=-1 ucredit=-1 lcredit=-1 ocredit=-1 difok=3 dictcheck=1/' /etc/pam.d/common-password
-sudo sed -i 's/pam_unix\.so.*/pam_unix.so obscure yescrypt remember=12/' /etc/pam.d/common-password
-sudo sed -i '/^audit/d; /^silent/d; /^deny =/d; /^fail_interval =/d; /^unlock_time =/d; $ a audit\nsilent\ndeny = 5\nfail_interval = 900\nunlock_time = 600' /etc/security/faillock.conf
-sudo sed -i '/pam_faillock.so/d' /etc/pam.d/common-auth
-sudo sed -i '/pam_unix.so/{s/nullok //g; s/.pam_unix.so./auth [success=2 default=ignore] pam_unix.so/;t;s/^.*$/auth [success=2 default=ignore] pam_unix.so/}' /etc/pam.d/common-auth
-sudo sed -i '/auth requisite pam_deny.so/,/auth required pam_permit.so/d' /etc/pam.d/common-auth
-sudo sed -i 's/^auth required pam_unix.so.*/auth required pam_faillock.so preauth\n&/' /etc/pam.d/common-auth
-sudo sed -i '$ a auth [default=die] pam_faillock.so authfail onerr=fail\nauth sufficient pam_faillock.so authsucc\nauth requisite pam_deny.so\nauth required pam_permit.so' /etc/pam.d/common-auth
-sudo sed -i '$ a account required pam_faillock.so' /etc/pam.d/common-account
+# Add lines if they don't exist
+for setting in "minlen = 12" "dcredit = -1" "ucredit = -1" "lcredit = -1" "ocredit = -1" "difok = 3" "maxrepeat = 3" "dictcheck = 1"; do
+    param=$(echo "$setting" | cut -d= -f1 | xargs)
+    if ! grep -q "^$param" /etc/security/pwquality.conf; then
+        echo "$setting" | sudo tee -a /etc/security/pwquality.conf > /dev/null
+    fi
+done
 
+# Backup PAM files before modification
+echo "Backing up PAM configuration files..."
+sudo cp /etc/pam.d/common-password /etc/pam.d/common-password.backup
+sudo cp /etc/pam.d/common-auth /etc/pam.d/common-auth.backup
+sudo cp /etc/pam.d/common-account /etc/pam.d/common-account.backup
 
-#Stop unneeded services
-sudo systemctl stop ngircd
-sudo systemctl disable ngircd
-sudo systemctl stop inspircd
-sudo systemctl disable ircd-irc2
-sudo systemctl stop ircd-irc2
-sudo systemctl disable inspircd
-sudo systemctl stop postfix
-sudo systemctl disable postfix
+# Configure faillock
+echo "Configuring account lockout policy..."
+sudo sed -i '/^audit/d; /^silent/d; /^deny =/d; /^fail_interval =/d; /^unlock_time =/d' /etc/security/faillock.conf
+cat << 'EOF' | sudo tee -a /etc/security/faillock.conf > /dev/null
+audit
+silent
+deny = 5
+fail_interval = 900
+unlock_time = 600
+EOF
 
-#Enable ufw
-sudo ufw enable
+# Update PAM password settings
+echo "Updating PAM password configuration..."
+# Remove nullok and add password history
+sudo sed -i 's/\(pam_unix\.so.*\)nullok/\1/' /etc/pam.d/common-password
+if ! grep -q "remember=" /etc/pam.d/common-password; then
+    sudo sed -i 's/\(pam_unix\.so.*\)/\1 remember=12/' /etc/pam.d/common-password
+fi
+
+# Use pam-auth-update to properly enable faillock
+echo "Enabling faillock through pam-auth-update..."
+if command -v pam-auth-update &> /dev/null; then
+    sudo DEBIAN_FRONTEND=noninteractive pam-auth-update --package --enable pwquality faillock
+else
+    echo "Warning: pam-auth-update not found, using manual configuration..."
+    # Manual faillock setup as fallback
+    if ! grep -q "pam_faillock.so preauth" /etc/pam.d/common-auth; then
+        sudo sed -i '/pam_unix.so/i auth required pam_faillock.so preauth' /etc/pam.d/common-auth
+        sudo sed -i '/pam_deny.so/i auth [default=die] pam_faillock.so authfail' /etc/pam.d/common-auth
+        echo "account required pam_faillock.so" | sudo tee -a /etc/pam.d/common-account > /dev/null
+    fi
+fi
+
+# Stop and disable unneeded services
+echo "Stopping unnecessary services..."
+services=("ngircd" "inspircd" "ircd-irc2" "postfix")
+for service in "${services[@]}"; do
+    if systemctl list-unit-files | grep -q "^${service}.service"; then
+        echo "Stopping and disabling $service..."
+        sudo systemctl stop "$service" 2>/dev/null || true
+        sudo systemctl disable "$service" 2>/dev/null || true
+    fi
+done
+
+# Enable and configure UFW
+echo "Configuring firewall..."
+sudo ufw --force enable
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw status
+
+echo ""
+echo "Security hardening complete!"
+echo ""
+echo "IMPORTANT: PAM configuration files have been backed up to:"
+echo "  - /etc/pam.d/common-password.backup"
+echo "  - /etc/pam.d/common-auth.backup"
+echo "  - /etc/pam.d/common-account.backup"
+echo ""
+echo "Please test sudo access in a NEW terminal before closing this one!"
+echo "If you get locked out, boot into recovery mode and restore from backups."
 
