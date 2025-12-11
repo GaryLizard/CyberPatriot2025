@@ -107,6 +107,65 @@ for service in "${services[@]}"; do
     fi
 done
 
+# Restrict hardlink creation (protected_hardlinks)
+echo "Restricting hardlink creation..."
+sudo sed -i 's/^fs.protected_hardlinks.*/fs.protected_hardlinks = 1/' /etc/sysctl.conf
+if ! grep -q "^fs.protected_hardlinks" /etc/sysctl.conf; then
+    echo "fs.protected_hardlinks = 1" | sudo tee -a /etc/sysctl.conf
+fi
+sudo sysctl -w fs.protected_hardlinks=1
+
+# Restrict symlink creation (protected_symlinks)
+echo "Restricting symlink creation..."
+sudo sed -i 's/^fs.protected_symlinks.*/fs.protected_symlinks = 1/' /etc/sysctl.conf
+if ! grep -q "^fs.protected_symlinks" /etc/sysctl.conf; then
+    echo "fs.protected_symlinks = 1" | sudo tee -a /etc/sysctl.conf
+fi
+sudo sysctl -w fs.protected_symlinks=1
+
+# Set mail user default shell to /usr/sbin/nologin
+echo "Setting mail user shell to nologin..."
+if id "mail" &>/dev/null; then
+    sudo usermod -s /usr/sbin/nologin mail
+fi
+
+# Set GRUB bootloader password
+echo "Setting GRUB bootloader password..."
+echo ""
+echo "======================================================================"
+echo "BOOTLOADER PASSWORD SETUP"
+echo "======================================================================"
+echo "You will be prompted to enter a password for the GRUB bootloader."
+echo "This password will be required to edit boot parameters."
+echo ""
+read -p "Press Enter to continue..."
+
+# Generate password hash
+GRUB_PASSWORD=$(grub-mkpasswd-pbkdf2 | grep -oP 'grub\.pbkdf2\.sha512\.\S+')
+
+if [ -n "$GRUB_PASSWORD" ]; then
+    # Create custom GRUB password file
+    sudo tee /etc/grub.d/40_custom_password > /dev/null << EOF
+#!/bin/sh
+cat << 'GRUBEOF'
+set superusers="admin"
+password_pbkdf2 admin $GRUB_PASSWORD
+GRUBEOF
+EOF
+    
+    sudo chmod +x /etc/grub.d/40_custom_password
+    
+    # Update GRUB configuration
+    sudo update-grub
+    
+    echo ""
+    echo "Bootloader password has been set successfully."
+    echo "Username: admin"
+    echo "Remember this password - you'll need it to edit boot parameters!"
+else
+    echo "ERROR: Failed to set bootloader password. Skipping..."
+fi
+
 # Enable and configure UFW
 echo "Configuring firewall..."
 sudo ufw --force enable
