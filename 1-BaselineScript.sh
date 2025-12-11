@@ -55,6 +55,8 @@ sudo sed -i '$ a account required pam_faillock.so' /etc/pam.d/common-account
 sudo systemctl stop ngircd
 sudo systemctl disable ngircd
 sudo systemctl stop inspircd
+sudo systemctl disable ircd-irc2
+sudo systemctl stop ircd-irc2
 sudo systemctl disable inspircd
 sudo systemctl stop postfix
 sudo systemctl disable postfix
