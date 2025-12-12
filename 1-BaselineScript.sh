@@ -184,3 +184,21 @@ echo ""
 echo "Please test sudo access in a NEW terminal before closing this one!"
 echo "If you get locked out, boot into recovery mode and restore from backups."
 
+# 2. Enable IPv4 source route verification
+if ! grep -q "net.ipv4.conf.default.accept_source_route = 0" /etc/sysctl.conf; then
+    echo "net.ipv4.conf.default.accept_source_route = 0" | sudo sh -c 'cat >> /etc/sysctl.conf'
+fi
+
+if ! grep -q "net.ipv4.conf.all.accept_source_route = 0" /etc/sysctl.conf; then
+    echo "net.ipv4.conf.all.accept_source_route = 0" | sudo sh -c 'cat >> /etc/sysctl.conf'
+fi
+echo "✓ IPv4 source route verification enabled"
+
+# 3. Enable ASLR
+if ! grep -q "kernel.randomize_va_space = 2" /etc/sysctl.conf; then
+    echo "kernel.randomize_va_space = 2" | sudo sh -c 'cat >> /etc/sysctl.conf'
+fi
+sudo sysctl -w kernel.randomize_va_space=2
+sudo sysctl -p
+echo "✓ ASLR enabled"
+
