@@ -202,3 +202,5 @@ sudo sysctl -w kernel.randomize_va_space=2
 sudo sysctl -p
 echo "✓ ASLR enabled"
 
+sudo chmod 640 /etc/shadow
+
